@@ -1,0 +1,36 @@
+# This block of code is for mounting NFS persistentVolumeClaims
+# to a compute session
+---
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: compute-server-add-mounts
+patch: |-
+  # NFS (PVC) - SASDATA
+  - op: add
+    path: /template/spec/volumes/-
+    value:
+      name: sasdata
+      persistentVolumeClaim:
+        claimName: sas-sasdata
+  - op: add
+    path: /template/spec/containers/0/volumeMounts/-
+    value:
+      name: sasdata
+      mountPath: /sasdata
+  - op: add
+    path: /template/spec/volumes/-
+    value:
+      name: saswork
+      hostPath:
+        path: /var/local-storage/saswork
+        type: Directory
+  - op: add
+    path: /template/spec/containers/0/volumeMounts/-
+    value:
+      name: saswork
+      mountPath: /saswork
+target:
+  kind: PodTemplate
+  version: v1
+  labelSelector: sas.com/template-intent=sas-launcher
